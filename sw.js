@@ -1,15 +1,13 @@
-const CACHE_NAME = 'lifeos-cache-v1';
+const CACHE_NAME = 'lifeos-cache-v2';
 const ASSETS = [
   './',
   './index.html',
-  './manifest.json',
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'
+  './manifest.json'
 ];
 
 self.addEventListener('install', (e) => {
+  self.skipWaiting(); // Força a atualização imediata
   e.waitUntil(caches.open(CACHE_NAME).then((c) => c.addAll(ASSETS)));
-  self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {
@@ -18,12 +16,18 @@ self.addEventListener('activate', (e) => {
       Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
     )
   );
-  self.clients.claim();
+  self.clients.claim(); // Toma controle da página na mesma hora
 });
 
 self.addEventListener('fetch', (e) => {
-  if (e.request.url.includes('firestore.googleapis.com') || e.request.url.includes('identitytoolkit')) {
-    return;
-  }
-  e.respondWith(caches.match(e.request).then((res) => res || fetch(e.request)));
+  if (e.request.url.includes('firestore.googleapis.com')) return;
+  
+  // Estratégia Network First: Tenta pegar o site novo na internet. Se estiver sem sinal, usa o cache.
+  e.respondWith(
+    fetch(e.request).then(response => {
+       return response;
+    }).catch(() => {
+       return caches.match(e.request);
+    })
+  );
 });
