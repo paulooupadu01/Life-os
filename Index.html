@@ -3,37 +3,668 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Life OS</title>
+  <title>Life OS Pro</title>
   <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#0f172a">
+  <meta name="theme-color" content="#090d16">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Life OS">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/9068/9068676.png">
+  
+  <!-- Tailwind CSS & Fontes -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row pb-20 md:pb-0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-  <!-- Tela de Acesso por Senha -->
-  <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
-    <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-lg shadow-blue-500/30">
-      <i class="fa-solid fa-lock"></i>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row pb-24 md:pb-0 selection:bg-blue-600 selection:text-white">
+
+  <!-- ================= TELA DE BLOQUEIO (PIN) ================= -->
+  <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-center">
+    <div class="relative mb-6">
+      <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-3xl shadow-xl shadow-blue-500/20 ring-1 ring-white/20">
+        <i class="fa-solid fa-fingerprint text-white"></i>
+      </div>
+      <span class="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-2 border-slate-950 rounded-full"></span>
     </div>
-    <h1 class="text-2xl font-bold mb-2">Life OS</h1>
-    <p class="text-slate-400 text-sm max-w-xs mb-6">Digite a senha de acesso para entrar.</p>
     
+    <h1 class="text-2xl font-bold tracking-tight text-white mb-1">Life OS Pro</h1>
+    <p class="text-slate-400 text-xs tracking-wide uppercase font-semibold mb-8">Central Pessoal Segura</p>
+
     <form id="form-pin" class="w-full max-w-xs space-y-4">
-      <input id="input-pin" type="password" inputmode="numeric" maxlength="8" placeholder="••••" required autofocus
-        class="w-full bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3.5 text-center text-2xl tracking-[0.5em] focus:outline-none focus:border-blue-500 text-white font-mono">
-      <div id="pin-error" class="text-rose-500 text-xs hidden">Senha incorreta. Tente novamente.</div>
-      <button type="submit" class="w-full bg-blue-600 active:scale-95 text-white py-3.5 rounded-2xl font-semibold shadow-lg shadow-blue-600/30 transition">
-        Acessar Painel
+      <div class="relative">
+        <input id="input-pin" type="password" inputmode="numeric" maxlength="8" placeholder="••••" required autofocus
+          class="w-full bg-slate-900/80 border border-slate-800/80 rounded-2xl px-4 py-4 text-center text-3xl tracking-[0.6em] focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 text-white font-mono transition-all">
+      </div>
+      <div id="pin-error" class="text-rose-400 text-xs font-medium hidden">
+        <i class="fa-solid fa-triangle-exclamation mr-1"></i> Senha incorreta. Tente novamente.
+      </div>
+      <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.98] text-white py-4 rounded-2xl font-semibold text-sm shadow-lg shadow-blue-600/25 transition duration-200">
+        Desbloquear Painel
       </button>
     </form>
   </div>
 
-  <!-- Barra Lateral Desktop -->
+  <!-- ================= BARRA LATERAL (DESKTOP) ================= -->
+  <aside class="hidden md:flex flex-col w-72 border-r border-slate-800/80 bg-slate-900/40 backdrop-blur-xl p-6 min-h-screen">
+    <div class="flex items-center gap-3.5 mb-10">
+      <div class="w-11 h-11 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center text-lg text-white shadow-md shadow-blue-500/20">
+        <i class="fa-solid fa-shapes"></i>
+      </div>
+      <div>
+        <h2 class="font-bold text-base tracking-tight leading-none text-white">Life OS</h2>
+        <span class="text-[11px] text-emerald-400 font-medium flex items-center gap-1.5 mt-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Sistema Sincronizado
+        </span>
+      </div>
+    </div>
+
+    <nav class="flex flex-col gap-1.5 flex-1 text-sm font-medium">
+      <button onclick="switchTab('dashboard')" class="tab-btn flex items-center gap-3.5 px-4 py-3 rounded-2xl text-left transition duration-200 text-blue-400 bg-blue-500/10" data-tab="dashboard">
+        <i class="fa-solid fa-chart-pie w-5 text-center"></i> Visão Geral
+      </button>
+      <button onclick="switchTab('compras')" class="tab-btn flex items-center gap-3.5 px-4 py-3 rounded-2xl text-left transition duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/40" data-tab="compras">
+        <i class="fa-solid fa-basket-shopping w-5 text-center text-emerald-400"></i> Compras
+      </button>
+      <button onclick="switchTab('gastos')" class="tab-btn flex items-center gap-3.5 px-4 py-3 rounded-2xl text-left transition duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/40" data-tab="gastos">
+        <i class="fa-solid fa-wallet w-5 text-center text-amber-400"></i> Gastos
+      </button>
+      <button onclick="switchTab('habitos')" class="tab-btn flex items-center gap-3.5 px-4 py-3 rounded-2xl text-left transition duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/40" data-tab="habitos">
+        <i class="fa-solid fa-calendar-check w-5 text-center text-indigo-400"></i> Hábitos
+      </button>
+      <button onclick="switchTab('bens')" class="tab-btn flex items-center gap-3.5 px-4 py-3 rounded-2xl text-left transition duration-200 text-slate-400 hover:text-slate-200 hover:bg-slate-800/40" data-tab="bens">
+        <i class="fa-solid fa-shield-halved w-5 text-center text-rose-400"></i> Casa & Bens
+      </button>
+    </nav>
+
+    <button id="btn-logout-desktop" class="text-xs font-semibold uppercase tracking-wider text-slate-500 hover:text-rose-400 py-3 px-4 rounded-xl hover:bg-rose-500/10 transition flex items-center gap-2.5">
+      <i class="fa-solid fa-lock text-sm"></i> Bloquear Sistema
+    </button>
+  </aside>
+
+  <!-- ================= ÁREA DE CONTEÚDO PRINCIPAL ================= -->
+  <main class="flex-1 max-w-3xl mx-auto w-full p-4 md:p-8">
+    
+    <!-- Cabeçalho Superior -->
+    <header class="flex justify-between items-center mb-6 pt-2">
+      <div>
+        <p id="header-date" class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Hoje</p>
+        <h1 id="page-title" class="text-2xl font-bold tracking-tight text-white mt-0.5">Visão Geral</h1>
+      </div>
+      <button id="btn-logout-mobile" class="md:hidden text-xs text-slate-400 bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-xl flex items-center gap-2">
+        <i class="fa-solid fa-lock text-slate-500"></i> Bloquear
+      </button>
+    </header>
+
+    <!-- ================= 1. ABA DASHBOARD (VISÃO GERAL) ================= -->
+    <section id="module-dashboard" class="module-view space-y-6">
+      <!-- Grid de Resumo Rápido -->
+      <div class="grid grid-cols-2 gap-3.5">
+        <div class="glass-panel p-4 rounded-3xl border border-slate-800/80">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-medium text-slate-400">Gastos do Mês</span>
+            <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-wallet"></i>
+            </div>
+          </div>
+          <div id="dash-gastos-total" class="text-xl font-bold text-white tracking-tight">R$ 0,00</div>
+          <span class="text-[11px] text-slate-500 mt-1 block">Soma de lançamentos</span>
+        </div>
+
+        <div class="glass-panel p-4 rounded-3xl border border-slate-800/80">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-medium text-slate-400">Hábitos Hoje</span>
+            <div class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-fire"></i>
+            </div>
+          </div>
+          <div id="dash-habitos-percent" class="text-xl font-bold text-white tracking-tight">0%</div>
+          <div class="w-full bg-slate-800 rounded-full h-1.5 mt-2 overflow-hidden">
+            <div id="dash-habitos-bar" class="bg-indigo-500 h-1.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <div class="glass-panel p-4 rounded-3xl border border-slate-800/80">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-medium text-slate-400">No Mercado</span>
+            <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-cart-shopping"></i>
+            </div>
+          </div>
+          <div id="dash-compras-count" class="text-xl font-bold text-white tracking-tight">0 itens</div>
+          <span class="text-[11px] text-slate-500 mt-1 block">Ainda pendentes</span>
+        </div>
+
+        <div class="glass-panel p-4 rounded-3xl border border-slate-800/80">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-medium text-slate-400">Manutenções</span>
+            <div class="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center text-sm">
+              <i class="fa-solid fa-wrench"></i>
+            </div>
+          </div>
+          <div id="dash-bens-alert" class="text-xl font-bold text-white tracking-tight">0 alertas</div>
+          <span class="text-[11px] text-slate-500 mt-1 block">Garantias / revisões</span>
+        </div>
+      </div>
+
+      <!-- Atalhos Rápidos -->
+      <div class="glass-panel p-5 rounded-3xl space-y-3">
+        <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-400">Ações Frequentes</h3>
+        <div class="grid grid-cols-2 gap-2.5">
+          <button onclick="switchTab('compras')" class="flex items-center gap-3 p-3 rounded-2xl bg-slate-900/80 border border-slate-800 text-left hover:bg-slate-800/50 transition">
+            <i class="fa-solid fa-plus text-emerald-400 text-sm"></i>
+            <span class="text-xs font-medium text-slate-200">Lista de Mercado</span>
+          </button>
+          <button onclick="switchTab('gastos')" class="flex items-center gap-3 p-3 rounded-2xl bg-slate-900/80 border border-slate-800 text-left hover:bg-slate-800/50 transition">
+            <i class="fa-solid fa-plus text-amber-400 text-sm"></i>
+            <span class="text-xs font-medium text-slate-200">Anotar Despesa</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 2. ABA COMPRAS ================= -->
+    <section id="module-compras" class="module-view hidden space-y-4">
+      <form id="form-compras" class="glass-panel p-3.5 rounded-2xl space-y-3">
+        <div class="flex gap-2">
+          <input id="input-compra-item" type="text" placeholder="Nome do item..." required
+            class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500 text-white">
+          <button type="submit" class="bg-emerald-600 active:scale-95 text-white px-5 rounded-xl text-sm font-semibold shadow-md shadow-emerald-600/20">
+            Adicionar
+          </button>
+        </div>
+        <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar pb-1 text-xs">
+          <span class="text-slate-500 text-[11px]">Categoria:</span>
+          <select id="input-compra-categoria" class="bg-slate-900 border border-slate-800 text-slate-300 rounded-lg px-2.5 py-1.5 focus:outline-none">
+            <option value="Mercearia">🛒 Mercearia / Geral</option>
+            <option value="Churrasco & Carnes">🥩 Açougue / Churrasco</option>
+            <option value="Hortifrúti">🥬 Hortifrúti</option>
+            <option value="Laticínios & Frios">🧀 Laticínios / Frios</option>
+            <option value="Limpeza & Casa">🧹 Limpeza & Casa</option>
+            <option value="Bebidas">🍺 Bebidas</option>
+          </select>
+        </div>
+      </form>
+
+      <div class="flex justify-between items-center px-1">
+        <div class="text-xs text-slate-400">
+          <span id="compras-pendentes-label">0 itens pendentes</span>
+        </div>
+        <button onclick="limparComprasConcluidas()" class="text-xs text-slate-400 hover:text-rose-400 transition flex items-center gap-1.5">
+          <i class="fa-regular fa-trash-can"></i> Limpar marcados
+        </button>
+      </div>
+
+      <div id="list-compras" class="space-y-2.5"></div>
+    </section>
+
+    <!-- ================= 3. ABA GASTOS ================= -->
+    <section id="module-gastos" class="module-view hidden space-y-4">
+      <form id="form-gastos" class="glass-panel p-4 rounded-3xl space-y-3.5">
+        <div class="relative">
+          <span class="absolute left-4 top-3.5 text-slate-500 font-semibold text-base">R$</span>
+          <input id="input-gasto-valor" type="number" step="0.01" placeholder="0,00" required
+            class="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-12 pr-4 py-3.5 text-xl font-bold focus:outline-none focus:border-amber-500 text-white">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <select id="input-gasto-categoria" class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-300 focus:outline-none">
+            <option value="Alimentação & Churrasco">🍔 Alimentação / Bar</option>
+            <option value="Supermercado">🛒 Supermercado</option>
+            <option value="Casa & Utilitários">🏡 Casa & Manutenção</option>
+            <option value="Transporte & Auto">⛽ Transporte / Combustível</option>
+            <option value="Lazer & Viagens">🏖️ Lazer & Viagens</option>
+            <option value="Equipamentos & Tech">💻 Tecnologia / Compras</option>
+            <option value="Outros">📦 Outros</option>
+          </select>
+          <input id="input-gasto-obs" type="text" placeholder="Observação (opcional)"
+            class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none">
+        </div>
+        <button type="submit" class="w-full bg-gradient-to-r from-amber-600 to-orange-600 active:scale-[0.98] text-white py-3.5 rounded-xl font-semibold text-sm shadow-lg shadow-amber-600/20">
+          Registrar Lançamento
+        </button>
+      </form>
+
+      <!-- Resumo de Despesas -->
+      <div class="glass-panel p-4 rounded-2xl flex justify-between items-center text-xs">
+        <span class="text-slate-400">Total registrado neste mês</span>
+        <span id="gastos-mes-badge" class="font-bold text-amber-400 text-sm">R$ 0,00</span>
+      </div>
+
+      <div id="list-gastos" class="space-y-2.5"></div>
+    </section>
+
+    <!-- ================= 4. ABA HÁBITOS ================= -->
+    <section id="module-habitos" class="module-view hidden space-y-4">
+      <form id="form-habitos" class="glass-panel p-3.5 rounded-2xl flex gap-2">
+        <input id="input-habito-titulo" type="text" placeholder="Qual o novo hábito diário?" required
+          class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 text-white">
+        <button type="submit" class="bg-indigo-600 active:scale-95 text-white px-5 rounded-xl text-sm font-semibold shadow-md shadow-indigo-600/20">
+          Criar
+        </button>
+      </form>
+
+      <div class="glass-panel p-4 rounded-2xl space-y-2">
+        <div class="flex justify-between text-xs font-semibold">
+          <span class="text-slate-400 uppercase tracking-wider">Progresso Diário</span>
+          <span id="habitos-progresso-texto" class="text-indigo-400">0 de 0 concluídos (0%)</span>
+        </div>
+        <div class="w-full bg-slate-900 rounded-full h-2 overflow-hidden">
+          <div id="habitos-progresso-barra" class="bg-gradient-to-r from-indigo-500 to-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div id="list-habitos" class="space-y-2.5"></div>
+    </section>
+
+    <!-- ================= 5. ABA CASA & BENS ================= -->
+    <section id="module-bens" class="module-view hidden space-y-4">
+      <form id="form-bens" class="glass-panel p-4 rounded-3xl space-y-3">
+        <input id="input-bem-nome" type="text" placeholder="Nome do item (ex: Carro, Lava-louças, Computador)" required
+          class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rose-500 text-white">
+        <div class="grid grid-cols-2 gap-2.5">
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Garantia Até</label>
+            <input id="input-bem-garantia" type="date" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200">
+          </div>
+          <div>
+            <label class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">Próxima Revisão</label>
+            <input id="input-bem-revisao" type="date" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200">
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-gradient-to-r from-rose-600 to-pink-600 active:scale-[0.98] text-white py-3.5 rounded-xl font-semibold text-sm shadow-lg shadow-rose-600/20">
+          Salvar Equipamento / Bem
+        </button>
+      </form>
+
+      <div id="list-bens" class="space-y-3"></div>
+    </section>
+  </main>
+
+  <!-- ================= BARRA DE NAVEGAÇÃO MOBILE (5 ABAS) ================= -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-950/90 backdrop-blur-xl border-t border-slate-800/80 flex justify-around items-center px-2 py-2.5 z-40">
+    <button onclick="switchTab('dashboard')" class="tab-btn flex flex-col items-center py-1 px-2.5 text-blue-400" data-tab="dashboard">
+      <i class="fa-solid fa-chart-pie text-base"></i>
+      <span class="text-[9px] font-medium mt-1">Início</span>
+    </button>
+    <button onclick="switchTab('compras')" class="tab-btn flex flex-col items-center py-1 px-2.5 text-slate-500" data-tab="compras">
+      <i class="fa-solid fa-basket-shopping text-base"></i>
+      <span class="text-[9px] font-medium mt-1">Compras</span>
+    </button>
+    <button onclick="switchTab('gastos')" class="tab-btn flex flex-col items-center py-1 px-2.5 text-slate-500" data-tab="gastos">
+      <i class="fa-solid fa-wallet text-base"></i>
+      <span class="text-[9px] font-medium mt-1">Gastos</span>
+    </button>
+    <button onclick="switchTab('habitos')" class="tab-btn flex flex-col items-center py-1 px-2.5 text-slate-500" data-tab="habitos">
+      <i class="fa-solid fa-calendar-check text-base"></i>
+      <span class="text-[9px] font-medium mt-1">Hábitos</span>
+    </button>
+    <button onclick="switchTab('bens')" class="tab-btn flex flex-col items-center py-1 px-2.5 text-slate-500" data-tab="bens">
+      <i class="fa-solid fa-shield-halved text-base"></i>
+      <span class="text-[9px] font-medium mt-1">Bens</span>
+    </button>
+  </nav>
+
+  <!-- ================= SCRIPT FIREBASE & LÓGICA ================= -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCq4d9m8Cf3H2RGYStLhkhedUWLPXn4hO0",
+      authDomain: "life-os-4f8b4.firebaseapp.com",
+      projectId: "life-os-4f8b4",
+      storageBucket: "life-os-4f8b4.firebasestorage.app",
+      messagingSenderId: "908431800473",
+      appId: "1:908431800473:web:c51bbb6c02d8f8fe6c2008"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const USER_ROOT = "principal";
+    const SENHA_MESTRA = "9606";
+
+    // Estado global de dados para alimentar o Dashboard
+    let cacheCompras = [];
+    let cacheGastos = [];
+    let cacheHabitos = [];
+    let cacheBens = [];
+
+    // Formatar data no topo
+    const agora = new Date();
+    const opcoesData = { weekday: 'long', day: 'numeric', month: 'long' };
+    document.getElementById('header-date').innerText = agora.toLocaleDateString('pt-BR', opcoesData);
+
+    // Controle de Acesso / PIN
+    const authScreen = document.getElementById('auth-screen');
+    const inputPin = document.getElementById('input-pin');
+    const pinError = document.getElementById('pin-error');
+    let ouvintesIniciados = false;
+
+    function liberarApp() {
+      authScreen.classList.add('hidden');
+      localStorage.setItem('lifeos_pro_auth', 'ok');
+      if (!ouvintesIniciados) {
+        iniciarSincronizacao();
+        ouvintesIniciados = true;
+      }
+    }
+
+    function bloquearApp() {
+      localStorage.removeItem('lifeos_pro_auth');
+      authScreen.classList.remove('hidden');
+      inputPin.value = '';
+      pinError.classList.add('hidden');
+      inputPin.focus();
+    }
+
+    document.getElementById('form-pin').onsubmit = (e) => {
+      e.preventDefault();
+      if (inputPin.value.trim() === SENHA_MESTRA) {
+        pinError.classList.add('hidden');
+        liberarApp();
+      } else {
+        pinError.classList.remove('hidden');
+        inputPin.value = '';
+        inputPin.focus();
+      }
+    };
+
+    document.getElementById('btn-logout-desktop').onclick = bloquearApp;
+    document.getElementById('btn-logout-mobile').onclick = bloquearApp;
+
+    if (localStorage.getItem('lifeos_pro_auth') === 'ok') {
+      liberarApp();
+    }
+
+    // Navegação entre Abas
+    window.switchTab = (tab) => {
+      document.querySelectorAll('.module-view').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`module-${tab}`).classList.remove('hidden');
+
+      const titulos = {
+        dashboard: 'Visão Geral',
+        compras: 'Lista de Compras',
+        gastos: 'Controle de Gastos',
+        habitos: 'Rotina & Hábitos',
+        bens: 'Casa & Equipamentos'
+      };
+      document.getElementById('page-title').innerText = titulos[tab];
+
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        const active = btn.getAttribute('data-tab') === tab;
+        if (window.innerWidth >= 768) {
+          btn.classList.toggle('text-blue-400', active);
+          btn.classList.toggle('bg-blue-500/10', active);
+          btn.classList.toggle('text-slate-400', !active);
+        } else {
+          btn.classList.toggle('text-blue-400', active);
+          btn.classList.toggle('text-slate-500', !active);
+        }
+      });
+    };
+
+    // Sincronização em Tempo Real com Firestore
+    function iniciarSincronizacao() {
+      // 1. Compras
+      onSnapshot(query(collection(db, `users/${USER_ROOT}/compras`), orderBy('createdAt', 'desc')), (snap) => {
+        cacheCompras = [];
+        const el = document.getElementById('list-compras');
+        el.innerHTML = '';
+        let pendentes = 0;
+
+        snap.forEach(d => {
+          const item = { id: d.id, ...d.data() };
+          cacheCompras.push(item);
+          if (!item.comprado) pendentes++;
+
+          el.innerHTML += `
+            <div class="glass-panel p-3.5 rounded-2xl flex items-center justify-between transition border border-slate-800/80">
+              <div class="flex items-center gap-3.5 flex-1 cursor-pointer" onclick="toggleCompra('${item.id}', ${!item.comprado})">
+                <i class="fa-solid ${item.comprado ? 'fa-circle-check text-emerald-400' : 'fa-circle text-slate-700'} text-xl"></i>
+                <div>
+                  <span class="${item.comprado ? 'line-through text-slate-500' : 'text-slate-200 font-medium'} text-sm block">${item.nome}</span>
+                  <span class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">${item.categoria || 'Geral'}</span>
+                </div>
+              </div>
+              <button onclick="remover('${USER_ROOT}', 'compras', '${item.id}')" class="text-slate-600 hover:text-rose-400 p-2 text-sm transition">
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+            </div>`;
+        });
+
+        document.getElementById('compras-pendentes-label').innerText = `${pendentes} itens pendentes`;
+        atualizarDashboard();
+      });
+
+      // 2. Gastos
+      onSnapshot(query(collection(db, `users/${USER_ROOT}/gastos`), orderBy('createdAt', 'desc')), (snap) => {
+        cacheGastos = [];
+        const el = document.getElementById('list-gastos');
+        el.innerHTML = '';
+        let totalMes = 0;
+        const mesAtual = new Date().getMonth();
+
+        snap.forEach(d => {
+          const gasto = { id: d.id, ...d.data() };
+          cacheGastos.push(gasto);
+          const dataGasto = new Date(gasto.createdAt);
+          if (dataGasto.getMonth() === mesAtual) {
+            totalMes += Number(gasto.valor) || 0;
+          }
+
+          el.innerHTML += `
+            <div class="glass-panel p-3.5 rounded-2xl flex items-center justify-between border border-slate-800/80">
+              <div>
+                <div class="text-base font-bold text-white tracking-tight">R$ ${Number(gasto.valor).toFixed(2).replace('.', ',')}</div>
+                <div class="text-xs text-slate-400 mt-0.5">
+                  <span class="font-medium text-amber-400/90">${gasto.categoria}</span>
+                  ${gasto.obs ? `<span class="text-slate-500"> • ${gasto.obs}</span>` : ''}
+                </div>
+              </div>
+              <button onclick="remover('${USER_ROOT}', 'gastos', '${gasto.id}')" class="text-slate-600 hover:text-rose-400 p-2 text-sm transition">
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+            </div>`;
+        });
+
+        const totalFormatado = `R$ ${totalMes.toFixed(2).replace('.', ',')}`;
+        document.getElementById('gastos-mes-badge').innerText = totalFormatado;
+        atualizarDashboard();
+      });
+
+      // 3. Hábitos
+      onSnapshot(query(collection(db, `users/${USER_ROOT}/habitos`), orderBy('createdAt', 'asc')), (snap) => {
+        cacheHabitos = [];
+        const el = document.getElementById('list-habitos');
+        el.innerHTML = '';
+        let concluidos = 0;
+
+        snap.forEach(d => {
+          const habito = { id: d.id, ...d.data() };
+          cacheHabitos.push(habito);
+          if (habito.concluido) concluidos++;
+
+          el.innerHTML += `
+            <div class="glass-panel p-3.5 rounded-2xl flex items-center justify-between border border-slate-800/80">
+              <div class="flex items-center gap-3.5 flex-1 cursor-pointer" onclick="toggleHabito('${habito.id}', ${!habito.concluido})">
+                <i class="fa-solid ${habito.concluido ? 'fa-square-check text-indigo-400' : 'fa-square text-slate-700'} text-xl"></i>
+                <span class="${habito.concluido ? 'line-through text-slate-500' : 'text-slate-200 font-medium'} text-sm">${habito.titulo}</span>
+              </div>
+              <button onclick="remover('${USER_ROOT}', 'habitos', '${habito.id}')" class="text-slate-600 hover:text-rose-400 p-2 text-sm transition">
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+            </div>`;
+        });
+
+        const total = cacheHabitos.length;
+        const pct = total > 0 ? Math.round((concluidos / total) * 100) : 0;
+        document.getElementById('habitos-progresso-texto').innerText = `${concluidos} de ${total} (${pct}%)`;
+        document.getElementById('habitos-progresso-barra').style.width = `${pct}%`;
+        atualizarDashboard();
+      });
+
+      // 4. Casa & Bens
+      onSnapshot(query(collection(db, `users/${USER_ROOT}/bens`), orderBy('createdAt', 'desc')), (snap) => {
+        cacheBens = [];
+        const el = document.getElementById('list-bens');
+        el.innerHTML = '';
+
+        snap.forEach(d => {
+          const bem = { id: d.id, ...d.data() };
+          cacheBens.push(bem);
+
+          // Cálculo de status de garantia
+          let badgeGarantia = '';
+          if (bem.garantia) {
+            const diasGarantia = Math.ceil((new Date(bem.garantia) - new Date()) / (1000 * 60 * 60 * 24));
+            if (diasGarantia < 0) {
+              badgeGarantia = `<span class="bg-rose-500/10 text-rose-400 text-[10px] font-semibold px-2 py-0.5 rounded-md">Garantia expirada</span>`;
+            } else if (diasGarantia <= 30) {
+              badgeGarantia = `<span class="bg-amber-500/10 text-amber-400 text-[10px] font-semibold px-2 py-0.5 rounded-md">Garantia acaba em ${diasGarantia} dias</span>`;
+            } else {
+              badgeGarantia = `<span class="bg-emerald-500/10 text-emerald-400 text-[10px] font-semibold px-2 py-0.5 rounded-md">Garantia válida (+${diasGarantia}d)</span>`;
+            }
+          }
+
+          el.innerHTML += `
+            <div class="glass-panel p-4 rounded-3xl border border-slate-800/80 space-y-2">
+              <div class="flex justify-between items-start">
+                <div>
+                  <h4 class="font-bold text-slate-100 text-sm">${bem.nome}</h4>
+                  <div class="flex flex-wrap gap-1.5 mt-1.5">${badgeGarantia}</div>
+                </div>
+                <button onclick="remover('${USER_ROOT}', 'bens', '${bem.id}')" class="text-slate-600 hover:text-rose-400 p-1 text-sm transition">
+                  <i class="fa-regular fa-trash-can"></i>
+                </button>
+              </div>
+              <div class="text-xs text-slate-400 grid grid-cols-2 gap-2 pt-2 border-t border-slate-800/60">
+                <div>Garantia: <span class="text-slate-200 font-medium">${bem.garantia || 'Não informada'}</span></div>
+                <div>Revisão: <span class="text-amber-400 font-medium">${bem.revisao || 'Não agendada'}</span></div>
+              </div>
+            </div>`;
+        });
+
+        atualizarDashboard();
+      });
+    }
+
+    // Atualização dos Cards do Dashboard
+    function atualizarDashboard() {
+      // Gastos
+      let total = 0;
+      const mes = new Date().getMonth();
+      cacheGastos.forEach(g => {
+        if (new Date(g.createdAt).getMonth() === mes) total += Number(g.valor) || 0;
+      });
+      document.getElementById('dash-gastos-total').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+
+      // Hábitos
+      const totalH = cacheHabitos.length;
+      const concH = cacheHabitos.filter(h => h.concluido).length;
+      const pctH = totalH > 0 ? Math.round((concH / totalH) * 100) : 0;
+      document.getElementById('dash-habitos-percent').innerText = `${pctH}%`;
+      document.getElementById('dash-habitos-bar').style.width = `${pctH}%`;
+
+      // Compras
+      const pendentesC = cacheCompras.filter(c => !c.comprado).length;
+      document.getElementById('dash-compras-count').innerText = `${pendentesC} itens`;
+
+      // Alertas de Manutenção
+      let alertas = 0;
+      const hoje = new Date();
+      cacheBens.forEach(b => {
+        if (b.garantia) {
+          const diff = Math.ceil((new Date(b.garantia) - hoje) / (1000 * 60 * 60 * 24));
+          if (diff <= 30) alertas++;
+        }
+      });
+      document.getElementById('dash-bens-alert').innerText = `${alertas} alertas`;
+    }
+
+    // Formulários
+    document.getElementById('form-compras').onsubmit = async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('input-compra-item');
+      const cat = document.getElementById('input-compra-categoria');
+      await addDoc(collection(db, `users/${USER_ROOT}/compras`), {
+        nome: input.value,
+        categoria: cat.value,
+        comprado: false,
+        createdAt: Date.now()
+      });
+      input.value = '';
+    };
+
+    document.getElementById('form-gastos').onsubmit = async (e) => {
+      e.preventDefault();
+      const val = document.getElementById('input-gasto-valor');
+      const cat = document.getElementById('input-gasto-categoria');
+      const obs = document.getElementById('input-gasto-obs');
+      await addDoc(collection(db, `users/${USER_ROOT}/gastos`), {
+        valor: val.value,
+        categoria: cat.value,
+        obs: obs.value,
+        createdAt: Date.now()
+      });
+      val.value = ''; obs.value = '';
+    };
+
+    document.getElementById('form-habitos').onsubmit = async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('input-habito-titulo');
+      await addDoc(collection(db, `users/${USER_ROOT}/habitos`), {
+        titulo: input.value,
+        concluido: false,
+        createdAt: Date.now()
+      });
+      input.value = '';
+    };
+
+    document.getElementById('form-bens').onsubmit = async (e) => {
+      e.preventDefault();
+      const nome = document.getElementById('input-bem-nome');
+      const garantia = document.getElementById('input-bem-garantia');
+      const revisao = document.getElementById('input-bem-revisao');
+      await addDoc(collection(db, `users/${USER_ROOT}/bens`), {
+        nome: nome.value,
+        garantia: garantia.value,
+        revisao: revisao.value,
+        createdAt: Date.now()
+      });
+      nome.value = ''; garantia.value = ''; revisao.value = '';
+    };
+
+    // Ações
+    window.toggleCompra = (id, st) => updateDoc(doc(db, `users/${USER_ROOT}/compras`, id), { comprado: st });
+    window.toggleHabito = (id, st) => updateDoc(doc(db, `users/${USER_ROOT}/habitos`, id), { concluido: st });
+    window.remover = (user, col, id) => deleteDoc(doc(db, `users/${user}/${col}`, id));
+    
+    window.limparComprasConcluidas = async () => {
+      const comprados = cacheCompras.filter(c => c.comprado);
+      for (const item of comprados) {
+        await deleteDoc(doc(db, `users/${USER_ROOT}/compras`, item.id));
+      }
+    };
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+    }
+  </script>
+</body>
+</html>
   <aside class="hidden md:flex flex-col w-64 border-r border-slate-800 bg-slate-900/50 p-6 min-h-screen">
     <div class="flex items-center gap-3 mb-8">
       <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-lg">
