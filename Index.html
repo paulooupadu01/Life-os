@@ -1,39 +1,621 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="dark"> <!-- Inicia no dark mode por padrão -->
+<html lang="pt-BR" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Life OS Pro</title>
+  <title>Life OS Ultimate</title>
   <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#020617">
+  <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Life OS">
   <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/9068/9068676.png">
   
-  <!-- Tailwind CSS & Fontes -->
+  <!-- Dependências: Tailwind, FontAwesome, Chart.js -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
-      darkMode: 'class', // Ativa a troca manual de temas
+      darkMode: 'class',
       theme: {
         extend: {
-          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] }
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: { app: { dark: '#09090b', light: '#f4f4f5', panel: '#18181b', panelLight: '#ffffff' } }
         }
       }
     }
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.3s, color 0.3s; }
+    body { font-family: 'Inter', sans-serif; transition: background-color 0.4s, color 0.4s; }
     
-    /* Efeito de Vidro (Claro/Escuro) */
-    .glass-panel {
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      transition: all 0.3s ease;
+    /* Efeitos Premium */
+    .glass { backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+    .dark .glass { background: rgba(24, 24, 27, 0.7); border: 1px solid rgba(255, 255, 255, 0.05); }
+    .glass { background: rgba(255, 255, 255, 0.8); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: 0 8px 32px rgba(0,0,0,0.04); }
+    
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Menu Ativo */
+    .nav-btn.active { color: #3b82f6; transform: scale(1.1); font-weight: 700; }
+    
+    /* Animação Modal */
+    .modal-enter { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  </style>
+</head>
+<body class="bg-app-light text-slate-800 dark:bg-app-dark dark:text-slate-100 min-h-screen flex flex-col md:flex-row pb-24 md:pb-0">
+
+  <!-- ================= TELA DE BLOQUEIO (PIN 9606) ================= -->
+  <div id="auth-screen" class="fixed inset-0 z-[100] bg-app-light/95 dark:bg-app-dark/95 glass flex flex-col items-center justify-center p-6 transition-all duration-500">
+    <div class="w-24 h-24 rounded-[2rem] bg-blue-600 flex items-center justify-center text-4xl shadow-2xl shadow-blue-500/40 mb-6">
+      <i class="fa-solid fa-fingerprint text-white"></i>
+    </div>
+    <h1 class="text-3xl font-extrabold tracking-tight mb-2">Life OS</h1>
+    <p class="text-slate-500 dark:text-slate-400 font-medium mb-10 text-sm tracking-widest uppercase">Acesso Restrito</p>
+
+    <form id="form-pin" class="w-full max-w-xs space-y-4">
+      <input id="input-pin" type="password" inputmode="numeric" maxlength="8" placeholder="••••" required autofocus
+        class="w-full bg-white dark:bg-zinc-900 border-2 border-transparent focus:border-blue-500 rounded-2xl px-4 py-4 text-center text-3xl tracking-[0.7em] text-slate-900 dark:text-white font-mono shadow-sm transition-all outline-none">
+      <div id="pin-error" class="text-rose-500 text-xs font-bold text-center hidden"><i class="fa-solid fa-xmark mr-1"></i> Senha incorreta</div>
+      <button type="submit" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:scale-[0.98] py-4 rounded-2xl font-bold text-sm transition shadow-lg">
+        Desbloquear
+      </button>
+    </form>
+  </div>
+
+  <!-- ================= SIDEBAR (DESKTOP) ================= -->
+  <aside class="hidden md:flex flex-col w-72 border-r border-slate-200 dark:border-zinc-800/50 bg-white dark:bg-zinc-900/50 p-6 min-h-screen">
+    <div class="flex items-center gap-4 mb-10">
+      <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center text-xl text-white shadow-lg">
+        <i class="fa-solid fa-bolt"></i>
+      </div>
+      <div>
+        <h2 class="font-bold text-lg leading-none">Paulo Mattei</h2>
+        <span class="text-xs text-emerald-500 font-semibold flex items-center gap-1.5 mt-1">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Online
+        </span>
+      </div>
+    </div>
+
+    <nav class="flex flex-col gap-2 flex-1 font-medium text-slate-500 dark:text-slate-400">
+      <button onclick="switchTab('dashboard')" class="nav-btn active flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition" data-tab="dashboard">
+        <i class="fa-solid fa-house w-5 text-center"></i> Início
+      </button>
+      <button onclick="switchTab('financas')" class="nav-btn flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition" data-tab="financas">
+        <i class="fa-solid fa-chart-line w-5 text-center"></i> Finanças
+      </button>
+      <button onclick="switchTab('tarefas')" class="nav-btn flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition" data-tab="tarefas">
+        <i class="fa-solid fa-list-check w-5 text-center"></i> Tarefas
+      </button>
+      <button onclick="switchTab('saude')" class="nav-btn flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition" data-tab="saude">
+        <i class="fa-solid fa-heart-pulse w-5 text-center"></i> Saúde & Rotina
+      </button>
+      <button onclick="switchTab('mercado')" class="nav-btn flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition" data-tab="mercado">
+        <i class="fa-solid fa-cart-shopping w-5 text-center"></i> Mercado
+      </button>
+      <button onclick="switchTab('bens')" class="nav-btn flex items-center gap-4 px-4 py-3 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition" data-tab="bens">
+        <i class="fa-solid fa-car w-5 text-center"></i> Patrimônio
+      </button>
+    </nav>
+
+    <div class="space-y-2 mt-auto pt-4 border-t border-slate-200 dark:border-zinc-800">
+      <button onclick="exportData()" class="w-full text-left text-xs font-bold text-slate-500 hover:text-blue-500 py-3 px-4 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition">
+        <i class="fa-solid fa-download w-5"></i> Exportar Backup
+      </button>
+      <button onclick="toggleTheme()" class="w-full text-left text-xs font-bold text-slate-500 hover:text-amber-500 py-3 px-4 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition">
+        <i class="fa-solid fa-circle-half-stroke w-5 theme-icon"></i> <span class="theme-text">Modo Tema</span>
+      </button>
+      <button onclick="bloquearApp()" class="w-full text-left text-xs font-bold text-slate-500 hover:text-rose-500 py-3 px-4 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 transition">
+        <i class="fa-solid fa-lock w-5"></i> Bloquear Tela
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= CONTEÚDO PRINCIPAL ================= -->
+  <main class="flex-1 max-w-5xl mx-auto w-full p-5 md:p-10 relative">
+    
+    <!-- Cabeçalho Dinâmico -->
+    <header class="flex justify-between items-end mb-8">
+      <div>
+        <p id="live-clock" class="text-xs font-bold text-slate-400 tracking-widest uppercase mb-1">00:00</p>
+        <h1 id="greeting-text" class="text-3xl md:text-4xl font-extrabold tracking-tight">Olá, Paulo</h1>
+      </div>
+      <div class="md:hidden flex gap-3">
+        <button onclick="toggleTheme()" class="w-10 h-10 rounded-full glass flex items-center justify-center text-slate-500"><i class="fa-solid fa-circle-half-stroke theme-icon"></i></button>
+        <button onclick="bloquearApp()" class="w-10 h-10 rounded-full glass flex items-center justify-center text-slate-500"><i class="fa-solid fa-lock"></i></button>
+      </div>
+    </header>
+
+    <!-- ================= 1. DASHBOARD ================= -->
+    <section id="view-dashboard" class="view-section space-y-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- Saldo -->
+        <div class="glass p-5 rounded-3xl col-span-2 md:col-span-2 bg-gradient-to-br from-blue-600 to-purple-600 text-white relative overflow-hidden">
+          <i class="fa-solid fa-wallet absolute -right-4 -bottom-4 text-7xl opacity-20"></i>
+          <span class="text-xs font-bold uppercase tracking-wider opacity-80">Saldo Atual</span>
+          <div id="dash-saldo" class="text-3xl md:text-4xl font-black mt-2">R$ 0,00</div>
+          <div class="mt-4 flex gap-4 text-xs font-medium opacity-90">
+            <span id="dash-receita"><i class="fa-solid fa-arrow-up text-emerald-300"></i> R$ 0,00</span>
+            <span id="dash-despesa"><i class="fa-solid fa-arrow-down text-rose-300"></i> R$ 0,00</span>
+          </div>
+        </div>
+
+        <!-- Tarefas -->
+        <div class="glass p-5 rounded-3xl flex flex-col justify-between">
+          <span class="text-xs font-bold text-slate-400 uppercase">Tarefas</span>
+          <div>
+            <div id="dash-tarefas" class="text-3xl font-black">0</div>
+            <span class="text-xs text-slate-500">Pendentes hoje</span>
+          </div>
+        </div>
+
+        <!-- Água -->
+        <div class="glass p-5 rounded-3xl flex flex-col justify-between">
+          <span class="text-xs font-bold text-slate-400 uppercase">Hidratação</span>
+          <div>
+            <div id="dash-agua" class="text-3xl font-black text-blue-500">0ml</div>
+            <span class="text-xs text-slate-500">Consumo hoje</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráfico Financeiro -->
+      <div class="glass p-5 rounded-3xl">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-lg">Fluxo de Despesas (Mês)</h3>
+        </div>
+        <div class="h-48 w-full"><canvas id="financeChart"></canvas></div>
+      </div>
+    </section>
+
+    <!-- ================= 2. FINANÇAS ================= -->
+    <section id="view-financas" class="view-section hidden space-y-6">
+      <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-extrabold">Controle Financeiro</h2>
+      </div>
+
+      <!-- Formulário de Transação -->
+      <form id="form-financas" class="glass p-5 rounded-3xl space-y-4">
+        <div class="flex bg-slate-100 dark:bg-zinc-800 p-1 rounded-xl w-full">
+          <label class="flex-1 text-center py-2 rounded-lg cursor-pointer transition has-[:checked]:bg-emerald-500 has-[:checked]:text-white font-bold text-sm">
+            <input type="radio" name="tipoGasto" value="receita" class="hidden"> Receita
+          </label>
+          <label class="flex-1 text-center py-2 rounded-lg cursor-pointer transition has-[:checked]:bg-rose-500 has-[:checked]:text-white font-bold text-sm">
+            <input type="radio" name="tipoGasto" value="despesa" class="hidden" checked> Despesa
+          </label>
+        </div>
+
+        <div class="relative">
+          <span class="absolute left-4 top-4 text-slate-400 font-bold">R$</span>
+          <input id="input-fin-valor" type="number" step="0.01" placeholder="0,00" required class="w-full bg-white dark:bg-zinc-900 border-none rounded-2xl pl-12 pr-4 py-4 text-xl font-bold shadow-sm outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <input id="input-fin-desc" type="text" placeholder="Descrição (Ex: Salário, Conta de Luz)" required class="bg-white dark:bg-zinc-900 rounded-xl px-4 py-3 text-sm font-medium outline-none">
+          <select id="input-fin-cat" class="bg-white dark:bg-zinc-900 rounded-xl px-4 py-3 text-sm font-medium outline-none">
+            <option value="Fixa">📄 Fixa / Recorrente</option>
+            <option value="Variável">🍔 Variável / Lazer</option>
+            <option value="Rendimento">💰 Rendimento / Salário</option>
+          </select>
+        </div>
+        <button type="submit" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-sm shadow-lg hover:bg-blue-700 transition">Salvar Transação</button>
+      </form>
+
+      <!-- Lista Histórico -->
+      <div class="space-y-3">
+        <h3 class="font-bold text-slate-500 text-sm uppercase tracking-wider pl-2">Histórico Recente</h3>
+        <div id="list-financas" class="space-y-2"></div>
+      </div>
+    </section>
+
+    <!-- ================= 3. TAREFAS (KANBAN) ================= -->
+    <section id="view-tarefas" class="view-section hidden space-y-6">
+      <h2 class="text-2xl font-extrabold">Tarefas do Dia</h2>
+      
+      <form id="form-tarefas" class="flex gap-2">
+        <input id="input-tar-titulo" type="text" placeholder="O que precisa ser feito?" required class="flex-1 glass border-none rounded-xl px-5 py-4 font-medium outline-none focus:ring-2 focus:ring-blue-500">
+        <button type="submit" class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 rounded-xl font-bold shadow-lg"><i class="fa-solid fa-plus"></i></button>
+      </form>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Pendentes -->
+        <div class="glass p-4 rounded-3xl">
+          <h3 class="text-xs font-bold uppercase text-slate-400 mb-3 pl-1">⏳ Pendentes</h3>
+          <div id="list-tar-pendente" class="space-y-2 min-h-[100px]"></div>
+        </div>
+        <!-- Concluídas -->
+        <div class="glass p-4 rounded-3xl">
+          <h3 class="text-xs font-bold uppercase text-emerald-500 mb-3 pl-1">✅ Concluídas</h3>
+          <div id="list-tar-concluida" class="space-y-2 min-h-[100px]"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 4. SAÚDE & ROTINA ================= -->
+    <section id="view-saude" class="view-section hidden space-y-6">
+      <h2 class="text-2xl font-extrabold">Saúde & Hábitos</h2>
+      
+      <!-- Rastreador de Água -->
+      <div class="glass p-6 rounded-3xl text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-blue-500/10 -z-10" id="water-bg-fill" style="height: 0%; top: auto; bottom: 0; transition: height 0.5s;"></div>
+        <i class="fa-solid fa-droplet text-4xl text-blue-500 mb-2"></i>
+        <h3 class="font-bold text-lg">Hidratação</h3>
+        <p class="text-sm text-slate-500 mb-4"><span id="water-count" class="font-black text-blue-600 dark:text-blue-400 text-xl">0</span> ml consumidos hoje</p>
+        <div class="flex justify-center gap-3">
+          <button onclick="addWater(250)" class="bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-xl font-bold text-sm hover:scale-105 transition">+ 250ml</button>
+          <button onclick="addWater(500)" class="bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-xl font-bold text-sm hover:scale-105 transition">+ 500ml</button>
+          <button onclick="addWater(-250)" class="text-slate-400 px-3"><i class="fa-solid fa-rotate-left"></i></button>
+        </div>
+      </div>
+
+      <!-- Hábitos -->
+      <div class="space-y-3">
+        <form id="form-habitos" class="flex gap-2 mb-4">
+          <input id="input-hab-titulo" type="text" placeholder="Novo hábito..." required class="flex-1 glass border-none rounded-xl px-4 py-3 text-sm outline-none">
+          <button type="submit" class="bg-indigo-500 text-white px-5 rounded-xl font-bold shadow-md"><i class="fa-solid fa-plus"></i></button>
+        </form>
+        <div id="list-habitos" class="space-y-2"></div>
+      </div>
+    </section>
+
+    <!-- ================= 5. MERCADO ================= -->
+    <section id="view-mercado" class="view-section hidden space-y-6">
+      <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-extrabold">Mercado & Despensa</h2>
+        <button onclick="limparMercado()" class="text-xs font-bold text-rose-500 bg-rose-500/10 px-3 py-2 rounded-lg">Limpar Feitos</button>
+      </div>
+      
+      <form id="form-mercado" class="flex gap-2">
+        <input id="input-mer-nome" type="text" placeholder="Item (Ex: Fraldinha, Arroz)" required class="flex-1 glass border-none rounded-xl px-4 py-3 outline-none">
+        <select id="input-mer-cat" class="glass border-none rounded-xl px-3 outline-none font-bold text-sm w-1/3">
+          <option value="Mercearia">Geral</option>
+          <option value="Carnes">Carnes</option>
+          <option value="Limpeza">Limpeza</option>
+          <option value="Bebidas">Bebidas</option>
+        </select>
+        <button type="submit" class="bg-emerald-500 text-white px-5 rounded-xl font-bold shadow-md"><i class="fa-solid fa-plus"></i></button>
+      </form>
+
+      <div id="list-mercado" class="space-y-2"></div>
+    </section>
+
+    <!-- ================= 6. BENS & PATRIMÔNIO ================= -->
+    <section id="view-bens" class="view-section hidden space-y-6">
+      <h2 class="text-2xl font-extrabold">Gestão de Patrimônio</h2>
+      
+      <form id="form-bens" class="glass p-5 rounded-3xl space-y-4">
+        <input id="input-bem-nome" type="text" placeholder="Ex: Ar Condicionado, Seguro do Carro..." required class="w-full bg-white dark:bg-zinc-900 border-none rounded-xl px-4 py-3 outline-none">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-slate-500 block mb-1">Vencimento / Garantia</label>
+            <input id="input-bem-data" type="date" required class="w-full bg-white dark:bg-zinc-900 border-none rounded-xl px-4 py-3 text-sm outline-none">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-500 block mb-1">Tipo</label>
+            <select id="input-bem-tipo" class="w-full bg-white dark:bg-zinc-900 border-none rounded-xl px-4 py-3 text-sm font-bold outline-none">
+              <option value="Garantia">Garantia Eletro</option>
+              <option value="Documento">Documento/Seguro</option>
+              <option value="Revisao">Revisão Auto</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-rose-500 text-white py-3.5 rounded-xl font-bold text-sm shadow-md">Salvar Registro</button>
+      </form>
+
+      <div id="list-bens" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+    </section>
+
+  </main>
+
+  <!-- ================= NAVEGAÇÃO MOBILE (BOTTOM BAR) ================= -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 glass border-t border-slate-200 dark:border-zinc-800/80 flex justify-between items-center px-4 pb-safe pt-2 z-40">
+    <button onclick="switchTab('dashboard')" class="nav-btn active flex flex-col items-center p-2 text-slate-400" data-tab="dashboard"><i class="fa-solid fa-house text-xl"></i></button>
+    <button onclick="switchTab('financas')" class="nav-btn flex flex-col items-center p-2 text-slate-400" data-tab="financas"><i class="fa-solid fa-wallet text-xl"></i></button>
+    
+    <!-- Mega FAB Central -->
+    <div class="relative -top-5">
+      <button onclick="switchTab('tarefas')" class="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl shadow-lg shadow-blue-500/50 hover:scale-105 transition nav-btn" data-tab="tarefas">
+        <i class="fa-solid fa-list-check"></i>
+      </button>
+    </div>
+
+    <button onclick="switchTab('saude')" class="nav-btn flex flex-col items-center p-2 text-slate-400" data-tab="saude"><i class="fa-solid fa-heart-pulse text-xl"></i></button>
+    <button onclick="switchTab('mercado')" class="nav-btn flex flex-col items-center p-2 text-slate-400" data-tab="mercado"><i class="fa-solid fa-cart-shopping text-xl"></i></button>
+  </nav>
+
+  <style> @supports (padding-bottom: env(safe-area-inset-bottom)) { .pb-safe { padding-bottom: env(safe-area-inset-bottom); } } </style>
+
+  <!-- ================= LÓGICA E FIREBASE ================= -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // 1. CONFIGURAÇÃO FIREBASE
+    const firebaseConfig = {
+      apiKey: "AIzaSyCq4d9m8Cf3H2RGYStLhkhedUWLPXn4hO0",
+      authDomain: "life-os-4f8b4.firebaseapp.com",
+      projectId: "life-os-4f8b4",
+      storageBucket: "life-os-4f8b4.firebasestorage.app",
+      messagingSenderId: "908431800473",
+      appId: "1:908431800473:web:c51bbb6c02d8f8fe6c2008"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const USER_ROOT = "principal";
+    const PIN = "9606";
+    const dataHoje = new Date().toISOString().split('T')[0];
+
+    // Formatadores
+    const fmtMoeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+    const fmtData = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
+
+    // 2. TEMA E RELÓGIO
+    const html = document.documentElement;
+    function applyTheme(isDark) {
+      if (isDark) { html.classList.add('dark'); document.querySelectorAll('.theme-icon').forEach(i => i.className='fa-solid fa-sun theme-icon'); document.querySelectorAll('.theme-text').forEach(t => t.innerText='Modo Claro'); }
+      else { html.classList.remove('dark'); document.querySelectorAll('.theme-icon').forEach(i => i.className='fa-solid fa-moon theme-icon'); document.querySelectorAll('.theme-text').forEach(t => t.innerText='Modo Escuro'); }
+    }
+    let isDark = localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    applyTheme(isDark);
+    window.toggleTheme = () => { isDark = !isDark; localStorage.setItem('theme', isDark ? 'dark' : 'light'); applyTheme(isDark); atualizarGrafico(); };
+
+    setInterval(() => {
+      const now = new Date();
+      document.getElementById('live-clock').innerText = now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+      const h = now.getHours();
+      document.getElementById('greeting-text').innerText = h < 12 ? 'Bom dia, Paulo' : h < 18 ? 'Boa tarde, Paulo' : 'Boa noite, Paulo';
+    }, 1000);
+
+    // 3. AUTENTICAÇÃO
+    const authScreen = document.getElementById('auth-screen');
+    const inputPin = document.getElementById('input-pin');
+    let ouvintesLigados = false;
+
+    function liberar() {
+      authScreen.style.opacity = '0'; setTimeout(() => authScreen.classList.add('hidden'), 500);
+      localStorage.setItem('auth', 'ok');
+      if (!ouvintesLigados) { iniciarDB(); ouvintesLigados = true; }
+    }
+    window.bloquearApp = () => {
+      localStorage.removeItem('auth'); authScreen.classList.remove('hidden'); setTimeout(() => authScreen.style.opacity = '1', 50);
+      inputPin.value = ''; document.getElementById('pin-error').classList.add('hidden');
+    }
+    document.getElementById('form-pin').onsubmit = (e) => {
+      e.preventDefault();
+      if(inputPin.value === PIN) { document.getElementById('pin-error').classList.add('hidden'); liberar(); }
+      else { document.getElementById('pin-error').classList.remove('hidden'); inputPin.value = ''; }
+    }
+    if (localStorage.getItem('auth') === 'ok') liberar();
+
+    // 4. NAVEGAÇÃO
+    window.switchTab = (tab) => {
+      document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`view-${tab}`).classList.remove('hidden');
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
+        if(window.innerWidth < 768 && btn.getAttribute('data-tab') === tab && tab !== 'tarefas') {
+          btn.classList.add('text-blue-500'); btn.classList.remove('text-slate-400');
+        } else if (window.innerWidth < 768 && tab !== 'tarefas') {
+          btn.classList.remove('text-blue-500'); btn.classList.add('text-slate-400');
+        }
+      });
+      window.scrollTo(0,0);
+    }
+
+    // 5. BANCO DE DADOS EM TEMPO REAL E RENDERIZAÇÃO
+    let chartIntance = null;
+    let exportDataCache = {};
+
+    function iniciarDB() {
+      // -- FINANÇAS --
+      onSnapshot(query(collection(db, `users/${USER_ROOT}/financas`), orderBy('createdAt', 'desc')), (snap) => {
+        const el = document.getElementById('list-financas'); el.innerHTML = '';
+        let receita = 0, despesa = 0;
+        const labelsGrafico = [], dadosGrafico = [];
+        exportDataCache.financas = [];
+
+        snap.forEach(d => {
+          const f = { id: d.id, ...d.data() };
+          exportDataCache.financas.push(f);
+          const isRec = f.tipo === 'receita';
+          if(isRec) receita += Number(f.valor); else despesa += Number(f.valor);
+          
+          if(labelsGrafico.length < 7 && !isRec) { labelsGrafico.unshift(f.desc.substring(0,10)); dadosGrafico.unshift(f.valor); }
+
+          el.innerHTML += `
+            <div class="glass p-4 rounded-2xl flex justify-between items-center">
+              <div class="flex gap-4 items-center">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center ${isRec ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}">
+                  <i class="fa-solid ${isRec ? 'fa-arrow-up' : 'fa-arrow-down'}"></i>
+                </div>
+                <div>
+                  <div class="font-bold">${f.desc}</div>
+                  <div class="text-[10px] uppercase font-bold text-slate-400">${f.cat}</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="font-black ${isRec ? 'text-emerald-500' : 'text-rose-500'}">${isRec ? '+' : '-'}${fmtMoeda.format(f.valor)}</div>
+                <button onclick="remover('financas', '${f.id}')" class="text-slate-400 text-xs hover:text-rose-500 mt-1"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </div>`;
+        });
+        
+        document.getElementById('dash-saldo').innerText = fmtMoeda.format(receita - despesa);
+        document.getElementById('dash-receita').innerHTML = `<i class="fa-solid fa-arrow-up text-emerald-400"></i> ${fmtMoeda.format(receita)}`;
+        document.getElementById('dash-despesa').innerHTML = `<i class="fa-solid fa-arrow-down text-rose-400"></i> ${fmtMoeda.format(despesa)}`;
+        renderGrafico(labelsGrafico, dadosGrafico);
+      });
+
+      // -- TAREFAS --
+      onSnapshot(query(collection(db, `users/${USER_ROOT}/tarefas`), orderBy('createdAt', 'desc')), (snap) => {
+        const elP = document.getElementById('list-tar-pendente'), elC = document.getElementById('list-tar-concluida');
+        elP.innerHTML = ''; elC.innerHTML = '';
+        let countP = 0; exportDataCache.tarefas = [];
+
+        snap.forEach(d => {
+          const t = { id: d.id, ...d.data() };
+          exportDataCache.tarefas.push(t);
+          const html = `
+            <div class="bg-white dark:bg-zinc-800 p-3 rounded-xl border border-slate-100 dark:border-zinc-700 shadow-sm flex justify-between items-center">
+              <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="update('${t.id}', 'tarefas', {status: '${t.status === 'pendente' ? 'concluida' : 'pendente'}'})">
+                <i class="fa-regular ${t.status === 'pendente' ? 'fa-circle text-slate-300' : 'fa-circle-check text-emerald-500'} text-xl"></i>
+                <span class="font-semibold text-sm ${t.status !== 'pendente' ? 'line-through text-slate-400' : ''}">${t.titulo}</span>
+              </div>
+              <button onclick="remover('tarefas', '${t.id}')" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-xmark"></i></button>
+            </div>`;
+          if (t.status === 'pendente') { elP.innerHTML += html; countP++; } else { elC.innerHTML += html; }
+        });
+        document.getElementById('dash-tarefas').innerText = countP;
+      });
+
+      // -- HÁBITOS --
+      onSnapshot(query(collection(db, `users/${USER_ROOT}/habitos`), orderBy('createdAt', 'asc')), (snap) => {
+        const el = document.getElementById('list-habitos'); el.innerHTML = ''; exportDataCache.habitos = [];
+        snap.forEach(d => {
+          const h = { id: d.id, ...d.data() };
+          exportDataCache.habitos.push(h);
+          const doneToday = h.lastDone === dataHoje;
+          el.innerHTML += `
+            <div class="glass p-4 rounded-xl flex justify-between items-center group">
+              <div class="flex items-center gap-4 flex-1 cursor-pointer" onclick="update('${h.id}', 'habitos', {lastDone: '${doneToday ? '' : dataHoje}'})">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center ${doneToday ? 'bg-indigo-500 text-white shadow-lg' : 'bg-slate-200 dark:bg-zinc-800 text-slate-400'} transition-all">
+                  <i class="fa-solid fa-check"></i>
+                </div>
+                <span class="font-bold">${h.titulo}</span>
+              </div>
+              <button onclick="remover('habitos', '${h.id}')" class="text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition"><i class="fa-solid fa-trash"></i></button>
+            </div>`;
+        });
+      });
+
+      // -- ÁGUA --
+      const refAgua = doc(db, `users/${USER_ROOT}/saude`, dataHoje);
+      onSnapshot(refAgua, (d) => {
+        const ml = d.exists() ? d.data().ml : 0;
+        document.getElementById('water-count').innerText = ml;
+        document.getElementById('dash-agua').innerText = `${ml}ml`;
+        const pct = Math.min((ml / 2500) * 100, 100);
+        document.getElementById('water-bg-fill').style.height = `${pct}%`;
+      });
+
+      // -- MERCADO --
+      onSnapshot(query(collection(db, `users/${USER_ROOT}/mercado`), orderBy('createdAt', 'desc')), (snap) => {
+        const el = document.getElementById('list-mercado'); el.innerHTML = ''; exportDataCache.mercado = [];
+        snap.forEach(d => {
+          const m = { id: d.id, ...d.data() };
+          exportDataCache.mercado.push(m);
+          el.innerHTML += `
+            <div class="glass p-3 rounded-xl flex items-center justify-between">
+              <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="update('${m.id}', 'mercado', {concluido: ${!m.concluido}})">
+                <i class="fa-solid ${m.concluido ? 'fa-square-check text-emerald-500' : 'fa-square text-slate-300'} text-xl"></i>
+                <div>
+                  <div class="${m.concluido ? 'line-through text-slate-400' : 'font-bold'} text-sm">${m.nome}</div>
+                  <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">${m.cat}</div>
+                </div>
+              </div>
+            </div>`;
+        });
+      });
+
+      // -- BENS --
+      onSnapshot(query(collection(db, `users/${USER_ROOT}/bens`), orderBy('data', 'asc')), (snap) => {
+        const el = document.getElementById('list-bens'); el.innerHTML = ''; exportDataCache.bens = [];
+        snap.forEach(d => {
+          const b = { id: d.id, ...d.data() };
+          exportDataCache.bens.push(b);
+          const dias = Math.ceil((new Date(b.data) - new Date()) / 86400000);
+          const cor = dias < 0 ? 'text-rose-500' : dias < 30 ? 'text-amber-500' : 'text-emerald-500';
+          el.innerHTML += `
+            <div class="glass p-4 rounded-2xl relative overflow-hidden">
+              <div class="flex justify-between items-start mb-2">
+                <span class="text-[10px] font-bold text-slate-400 uppercase bg-slate-100 dark:bg-zinc-800 px-2 py-1 rounded">${b.tipo}</span>
+                <button onclick="remover('bens', '${b.id}')" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-xmark"></i></button>
+              </div>
+              <h4 class="font-extrabold text-lg mb-1">${b.nome}</h4>
+              <div class="font-bold text-sm ${cor}"><i class="fa-regular fa-calendar"></i> ${fmtData.format(new Date(b.data))}</div>
+              <div class="text-xs text-slate-500 mt-1">${dias < 0 ? 'Vencido' : 'Faltam ' + dias + ' dias'}</div>
+            </div>`;
+        });
+      });
+    }
+
+    // Ações Formulários
+    document.getElementById('form-financas').onsubmit = (e) => {
+      e.preventDefault();
+      addDoc(collection(db, `users/${USER_ROOT}/financas`), {
+        tipo: document.querySelector('input[name="tipoGasto"]:checked').value,
+        valor: document.getElementById('input-fin-valor').value,
+        desc: document.getElementById('input-fin-desc').value,
+        cat: document.getElementById('input-fin-cat').value,
+        createdAt: Date.now()
+      });
+      document.getElementById('form-financas').reset();
+    };
+
+    document.getElementById('form-tarefas').onsubmit = (e) => {
+      e.preventDefault();
+      addDoc(collection(db, `users/${USER_ROOT}/tarefas`), { titulo: document.getElementById('input-tar-titulo').value, status: 'pendente', createdAt: Date.now() });
+      document.getElementById('input-tar-titulo').value = '';
+    };
+
+    document.getElementById('form-habitos').onsubmit = (e) => {
+      e.preventDefault();
+      addDoc(collection(db, `users/${USER_ROOT}/habitos`), { titulo: document.getElementById('input-hab-titulo').value, lastDone: '', createdAt: Date.now() });
+      document.getElementById('input-hab-titulo').value = '';
+    };
+
+    document.getElementById('form-mercado').onsubmit = (e) => {
+      e.preventDefault();
+      addDoc(collection(db, `users/${USER_ROOT}/mercado`), { nome: document.getElementById('input-mer-nome').value, cat: document.getElementById('input-mer-cat').value, concluido: false, createdAt: Date.now() });
+      document.getElementById('input-mer-nome').value = '';
+    };
+
+    document.getElementById('form-bens').onsubmit = (e) => {
+      e.preventDefault();
+      addDoc(collection(db, `users/${USER_ROOT}/bens`), { nome: document.getElementById('input-bem-nome').value, data: document.getElementById('input-bem-data').value, tipo: document.getElementById('input-bem-tipo').value, createdAt: Date.now() });
+      document.getElementById('form-bens').reset();
+    };
+
+    // Globais
+    window.update = (id, col, data) => updateDoc(doc(db, `users/${USER_ROOT}/${col}`, id), data);
+    window.remover = (col, id) => deleteDoc(doc(db, `users/${USER_ROOT}/${col}`, id));
+    window.limparMercado = () => exportDataCache.mercado.filter(m => m.concluido).forEach(m => remover('mercado', m.id));
+    
+    window.addWater = async (qtd) => {
+      const ref = doc(db, `users/${USER_ROOT}/saude`, dataHoje);
+      const s = await getDoc(ref);
+      const atual = s.exists() ? s.data().ml : 0;
+      const novo = Math.max(0, atual + qtd);
+      await setDoc(ref, { ml: novo, date: dataHoje });
+    };
+
+    window.exportData = () => {
+      const blob = new Blob([JSON.stringify(exportDataCache, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `Backup_LifeOS_${dataHoje}.json`;
+      a.click();
+    };
+
+    // Gráfico Chart.js
+    function renderGrafico(labels, data) {
+      const ctx = document.getElementById('financeChart').getContext('2d');
+      if(chartIntance) chartIntance.destroy();
+      Chart.defaults.color = isDark ? '#a1a1aa' : '#52525b';
+      chartIntance = new Chart(ctx, {
+        type: 'line',
+        data: { labels: labels.length ? labels : ['Sem dados'], datasets: [{ label: 'Despesas', data: data.length ? data : [0], borderColor: '#f43f5e', backgroundColor: 'rgba(244, 63, 94, 0.1)', borderWidth: 3, tension: 0.4, fill: true }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { display: false } }, y: { grid: { color: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' } } } }
+      });
+    }
+    window.atualizarGrafico = () => { if(chartIntance) { Chart.defaults.color = isDark ? '#a1a1aa' : '#52525b'; chartIntance.options.scales.y.grid.color = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'; chartIntance.update(); } };
+
+  </script>
+</body>
+</html>
     }
     .dark .glass-panel { background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); }
     .glass-panel { background: rgba(255, 255, 255, 0.7); border: 1px solid rgba(0, 0, 0, 0.05); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); }
