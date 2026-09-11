@@ -15,16 +15,22 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col md:flex-row pb-20 md:pb-0">
 
-  <!-- Tela de Login -->
+  <!-- Tela de Acesso por Senha -->
   <div id="auth-screen" class="fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center p-6 text-center">
     <div class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-3xl mb-4 shadow-lg shadow-blue-500/30">
-      <i class="fa-solid fa-layer-group"></i>
+      <i class="fa-solid fa-lock"></i>
     </div>
     <h1 class="text-2xl font-bold mb-2">Life OS</h1>
-    <p class="text-slate-400 text-sm max-w-xs mb-6">Central pessoal: compras, gastos, hábitos e manutenções.</p>
-    <button id="btn-login" class="flex items-center gap-3 bg-white text-slate-900 px-6 py-3 rounded-xl font-semibold shadow-md active:scale-95 transition">
-      <i class="fa-brands fa-google text-red-500"></i> Entrar com Google
-    </button>
+    <p class="text-slate-400 text-sm max-w-xs mb-6">Digite a senha de acesso para entrar.</p>
+    
+    <form id="form-pin" class="w-full max-w-xs space-y-4">
+      <input id="input-pin" type="password" inputmode="numeric" maxlength="8" placeholder="••••" required autofocus
+        class="w-full bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3.5 text-center text-2xl tracking-[0.5em] focus:outline-none focus:border-blue-500 text-white font-mono">
+      <div id="pin-error" class="text-rose-500 text-xs hidden">Senha incorreta. Tente novamente.</div>
+      <button type="submit" class="w-full bg-blue-600 active:scale-95 text-white py-3.5 rounded-2xl font-semibold shadow-lg shadow-blue-600/30 transition">
+        Acessar Painel
+      </button>
+    </form>
   </div>
 
   <!-- Barra Lateral Desktop -->
@@ -34,6 +40,317 @@
         <i class="fa-solid fa-layer-group"></i>
       </div>
       <div>
+        <h2 class="font-bold leading-none">Life OS</h2>
+        <span class="text-xs text-emerald-400" id="user-display-desktop">Online</span>
+      </div>
+    </div>
+    <nav class="flex flex-col gap-2 flex-1">
+      <button onclick="switchTab('compras')" class="tab-btn flex items-center gap-3 px-4 py-3 rounded-xl text-left hover:bg-slate-800 transition text-emerald-400" data-tab="compras">
+        <i class="fa-solid fa-cart-shopping w-5"></i> Compras
+      </button>
+      <button onclick="switchTab('gastos')" class="tab-btn flex items-center gap-3 px-4 py-3 rounded-xl text-left hover:bg-slate-800 transition text-slate-400" data-tab="gastos">
+        <i class="fa-solid fa-wallet w-5"></i> Gastos
+      </button>
+      <button onclick="switchTab('habitos')" class="tab-btn flex items-center gap-3 px-4 py-3 rounded-xl text-left hover:bg-slate-800 transition text-slate-400" data-tab="habitos">
+        <i class="fa-solid fa-circle-check w-5"></i> Hábitos
+      </button>
+      <button onclick="switchTab('bens')" class="tab-btn flex items-center gap-3 px-4 py-3 rounded-xl text-left hover:bg-slate-800 transition text-slate-400" data-tab="bens">
+        <i class="fa-solid fa-screwdriver-wrench w-5"></i> Casa & Bens
+      </button>
+    </nav>
+    <button id="btn-logout-desktop" class="text-sm text-slate-400 hover:text-rose-400 py-2 flex items-center gap-2">
+      <i class="fa-solid fa-lock"></i> Bloquear
+    </button>
+  </aside>
+
+  <!-- Área de Conteúdo -->
+  <main class="flex-1 max-w-2xl mx-auto w-full p-4 md:p-8">
+    <div class="flex md:hidden justify-between items-center mb-6 pt-2">
+      <h1 id="mobile-page-title" class="text-xl font-bold">Compras</h1>
+      <button id="btn-logout-mobile" class="text-xs text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg">Bloquear</button>
+    </div>
+
+    <!-- Módulo Compras -->
+    <section id="module-compras" class="module-view space-y-4">
+      <form id="form-compras" class="flex gap-2">
+        <input id="input-compra-item" type="text" placeholder="Adicionar item..." required
+          class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-emerald-500">
+        <button type="submit" class="bg-emerald-600 active:scale-95 text-white px-5 rounded-xl text-sm font-medium">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+      </form>
+      <div id="list-compras" class="space-y-2"></div>
+    </section>
+
+    <!-- Módulo Gastos -->
+    <section id="module-gastos" class="module-view hidden space-y-4">
+      <form id="form-gastos" class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-3">
+        <div class="relative">
+          <span class="absolute left-4 top-3.5 text-slate-500 text-sm font-semibold">R$</span>
+          <input id="input-gasto-valor" type="number" step="0.01" placeholder="0,00" required
+            class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-11 pr-4 py-3 text-lg font-semibold focus:outline-none focus:border-amber-500">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <select id="input-gasto-categoria" class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-300">
+            <option value="Alimentação">Alimentação</option>
+            <option value="Casa & Mercado">Casa & Mercado</option>
+            <option value="Transporte">Transporte</option>
+            <option value="Lazer & Outros">Lazer & Outros</option>
+          </select>
+          <input id="input-gasto-obs" type="text" placeholder="Descrição rápida"
+            class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm">
+        </div>
+        <button type="submit" class="w-full bg-amber-600 active:scale-95 text-white py-3 rounded-xl font-medium text-sm">
+          Anotar Gasto
+        </button>
+      </form>
+      <div id="list-gastos" class="space-y-2"></div>
+    </section>
+
+    <!-- Módulo Hábitos -->
+    <section id="module-habitos" class="module-view hidden space-y-4">
+      <form id="form-habitos" class="flex gap-2">
+        <input id="input-habito-titulo" type="text" placeholder="Novo hábito diário..." required
+          class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500">
+        <button type="submit" class="bg-indigo-600 active:scale-95 text-white px-5 rounded-xl text-sm font-medium">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+      </form>
+      <div id="list-habitos" class="space-y-2"></div>
+    </section>
+
+    <!-- Módulo Casa e Bens -->
+    <section id="module-bens" class="module-view hidden space-y-4">
+      <form id="form-bens" class="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-3">
+        <input id="input-bem-nome" type="text" placeholder="Nome do item (ex: Carro, Geladeira)" required
+          class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rose-500">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Fim da Garantia</label>
+            <input id="input-bem-garantia" type="date" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs">
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 block mb-1">Próxima Revisão</label>
+            <input id="input-bem-revisao" type="date" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs">
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-rose-600 active:scale-95 text-white py-3 rounded-xl font-medium text-sm">
+          Salvar Item
+        </button>
+      </form>
+      <div id="list-bens" class="space-y-2"></div>
+    </section>
+  </main>
+
+  <!-- Navegação Inferior Mobile -->
+  <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/90 backdrop-blur-md border-t border-slate-800 flex justify-around p-2 z-40">
+    <button onclick="switchTab('compras')" class="tab-btn flex flex-col items-center py-1 px-3 text-emerald-400" data-tab="compras">
+      <i class="fa-solid fa-cart-shopping text-lg"></i>
+      <span class="text-[10px] mt-1">Compras</span>
+    </button>
+    <button onclick="switchTab('gastos')" class="tab-btn flex flex-col items-center py-1 px-3 text-slate-400" data-tab="gastos">
+      <i class="fa-solid fa-wallet text-lg"></i>
+      <span class="text-[10px] mt-1">Gastos</span>
+    </button>
+    <button onclick="switchTab('habitos')" class="tab-btn flex flex-col items-center py-1 px-3 text-slate-400" data-tab="habitos">
+      <i class="fa-solid fa-circle-check text-lg"></i>
+      <span class="text-[10px] mt-1">Hábitos</span>
+    </button>
+    <button onclick="switchTab('bens')" class="tab-btn flex flex-col items-center py-1 px-3 text-slate-400" data-tab="bens">
+      <i class="fa-solid fa-screwdriver-wrench text-lg"></i>
+      <span class="text-[10px] mt-1">Bens</span>
+    </button>
+  </nav>
+
+  <!-- Lógica Firebase e Autenticação por Senha -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCq4d9m8Cf3H2RGYStLhkhedUWLPXn4hO0",
+      authDomain: "life-os-4f8b4.firebaseapp.com",
+      projectId: "life-os-4f8b4",
+      storageBucket: "life-os-4f8b4.firebasestorage.app",
+      messagingSenderId: "908431800473",
+      appId: "1:908431800473:web:c51bbb6c02d8f8fe6c2008"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const USER_ROOT = "principal"; // Namespace único para sincronizar em todos os aparelhos
+
+    // Gerenciamento da Senha
+    const SENHA_MESTRA = "9606";
+    const authScreen = document.getElementById('auth-screen');
+    const inputPin = document.getElementById('input-pin');
+    const pinError = document.getElementById('pin-error');
+    let ouvintesCarregados = false;
+
+    function liberarPainel() {
+      authScreen.classList.add('hidden');
+      localStorage.setItem('lifeos_pin_ok', 'true');
+      if (!ouvintesCarregados) {
+        iniciarOuvintes();
+        ouvintesCarregados = true;
+      }
+    }
+
+    function bloquearPainel() {
+      localStorage.removeItem('lifeos_pin_ok');
+      authScreen.classList.remove('hidden');
+      inputPin.value = '';
+      pinError.classList.add('hidden');
+      inputPin.focus();
+    }
+
+    document.getElementById('form-pin').onsubmit = (e) => {
+      e.preventDefault();
+      if (inputPin.value.trim() === SENHA_MESTRA) {
+        pinError.classList.add('hidden');
+        liberarPainel();
+      } else {
+        pinError.classList.remove('hidden');
+        inputPin.value = '';
+        inputPin.focus();
+      }
+    };
+
+    document.getElementById('btn-logout-desktop').onclick = bloquearPainel;
+    document.getElementById('btn-logout-mobile').onclick = bloquearPainel;
+
+    // Se já tiver logado anteriormente, entra direto
+    if (localStorage.getItem('lifeos_pin_ok') === 'true') {
+      liberarPainel();
+    }
+
+    window.switchTab = (tab) => {
+      document.querySelectorAll('.module-view').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`module-${tab}`).classList.remove('hidden');
+      const titles = { compras: 'Compras', gastos: 'Gastos', habitos: 'Hábitos', bens: 'Casa & Bens' };
+      document.getElementById('mobile-page-title').innerText = titles[tab];
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        const active = b.getAttribute('data-tab') === tab;
+        b.classList.toggle('text-white', active);
+        b.classList.toggle('text-slate-400', !active);
+      });
+    };
+
+    function iniciarOuvintes() {
+      // 1. Compras
+      onSnapshot(query(collection(db, `users/${USER_ROOT}/compras`), orderBy('createdAt', 'desc')), (s) => {
+        const el = document.getElementById('list-compras');
+        el.innerHTML = '';
+        s.forEach(d => {
+          const it = d.data();
+          el.innerHTML += `
+            <div class="flex items-center justify-between p-3.5 bg-slate-900 border border-slate-800 rounded-xl">
+              <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="toggleCompra('${d.id}', ${!it.comprado})">
+                <i class="fa-solid ${it.comprado ? 'fa-square-check text-emerald-400' : 'fa-square text-slate-600'} text-lg"></i>
+                <span class="${it.comprado ? 'line-through text-slate-500' : 'text-slate-200'} text-sm">${it.nome}</span>
+              </div>
+              <button onclick="remover('compras', '${d.id}')" class="text-slate-600 hover:text-rose-400 px-2"><i class="fa-solid fa-trash-can text-sm"></i></button>
+            </div>`;
+        });
+      });
+
+      // 2. Gastos
+      onSnapshot(query(collection(db, `users/${USER_ROOT}/gastos`), orderBy('createdAt', 'desc')), (s) => {
+        const el = document.getElementById('list-gastos');
+        el.innerHTML = '';
+        s.forEach(d => {
+          const g = d.data();
+          el.innerHTML += `
+            <div class="flex items-center justify-between p-3.5 bg-slate-900 border border-slate-800 rounded-xl">
+              <div>
+                <div class="text-sm font-semibold text-white">R$ ${Number(g.valor).toFixed(2)}</div>
+                <div class="text-xs text-slate-400">${g.categoria} ${g.obs ? '• ' + g.obs : ''}</div>
+              </div>
+              <button onclick="remover('gastos', '${d.id}')" class="text-slate-600 hover:text-rose-400 px-2"><i class="fa-solid fa-trash-can text-sm"></i></button>
+            </div>`;
+        });
+      });
+
+      // 3. Hábitos
+      onSnapshot(query(collection(db, `users/${USER_ROOT}/habitos`), orderBy('createdAt', 'asc')), (s) => {
+        const el = document.getElementById('list-habitos');
+        el.innerHTML = '';
+        s.forEach(d => {
+          const h = d.data();
+          el.innerHTML += `
+            <div class="flex items-center justify-between p-3.5 bg-slate-900 border border-slate-800 rounded-xl">
+              <div class="flex items-center gap-3 flex-1 cursor-pointer" onclick="toggleHabito('${d.id}', ${!h.concluido})">
+                <i class="fa-solid ${h.concluido ? 'fa-circle-check text-indigo-400' : 'fa-circle text-slate-600'} text-lg"></i>
+                <span class="${h.concluido ? 'line-through text-slate-500' : 'text-slate-200'} text-sm">${h.titulo}</span>
+              </div>
+              <button onclick="remover('habitos', '${d.id}')" class="text-slate-600 hover:text-rose-400 px-2"><i class="fa-solid fa-trash-can text-sm"></i></button>
+            </div>`;
+        });
+      });
+
+      // 4. Bens
+      onSnapshot(query(collection(db, `users/${USER_ROOT}/bens`), orderBy('createdAt', 'desc')), (s) => {
+        const el = document.getElementById('list-bens');
+        el.innerHTML = '';
+        s.forEach(d => {
+          const b = d.data();
+          el.innerHTML += `
+            <div class="p-3.5 bg-slate-900 border border-slate-800 rounded-xl flex justify-between items-center">
+              <div>
+                <div class="text-sm font-semibold text-slate-200">${b.nome}</div>
+                <div class="text-xs text-slate-400 mt-1 flex gap-3">
+                  ${b.garantia ? `<span>Garantia: ${b.garantia}</span>` : ''}
+                  ${b.revisao ? `<span class="text-amber-400">Revisão: ${b.revisao}</span>` : ''}
+                </div>
+              </div>
+              <button onclick="remover('bens', '${d.id}')" class="text-slate-600 hover:text-rose-400 px-2"><i class="fa-solid fa-trash-can text-sm"></i></button>
+            </div>`;
+        });
+      });
+    }
+
+    document.getElementById('form-compras').onsubmit = async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('input-compra-item');
+      await addDoc(collection(db, `users/${USER_ROOT}/compras`), { nome: input.value, comprado: false, createdAt: Date.now() });
+      input.value = '';
+    };
+
+    document.getElementById('form-gastos').onsubmit = async (e) => {
+      e.preventDefault();
+      const val = document.getElementById('input-gasto-valor');
+      const cat = document.getElementById('input-gasto-categoria');
+      const obs = document.getElementById('input-gasto-obs');
+      await addDoc(collection(db, `users/${USER_ROOT}/gastos`), { valor: val.value, categoria: cat.value, obs: obs.value, createdAt: Date.now() });
+      val.value = ''; obs.value = '';
+    };
+
+    document.getElementById('form-habitos').onsubmit = async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('input-habito-titulo');
+      await addDoc(collection(db, `users/${USER_ROOT}/habitos`), { titulo: input.value, concluido: false, createdAt: Date.now() });
+      input.value = '';
+    };
+
+    document.getElementById('form-bens').onsubmit = async (e) => {
+      e.preventDefault();
+      const nome = document.getElementById('input-bem-nome');
+      const garantia = document.getElementById('input-bem-garantia');
+      const revisao = document.getElementById('input-bem-revisao');
+      await addDoc(collection(db, `users/${USER_ROOT}/bens`), { nome: nome.value, garantia: garantia.value, revisao: revisao.value, createdAt: Date.now() });
+      nome.value = ''; garantia.value = ''; revisao.value = '';
+    };
+
+    window.toggleCompra = (id, st) => updateDoc(doc(db, `users/${USER_ROOT}/compras`, id), { comprado: st });
+    window.toggleHabito = (id, st) => updateDoc(doc(db, `users/${USER_ROOT}/habitos`, id), { concluido: st });
+    window.remover = (col, id) => deleteDoc(doc(db, `users/${USER_ROOT}/${col}`, id));
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+    }
+  </script>
+</body>
+</html>
         <h2 class="font-bold leading-none">Life OS</h2>
         <span class="text-xs text-slate-400" id="user-display-desktop">Conectando...</span>
       </div>
